@@ -158,12 +158,11 @@ namespace ImgBasedDiagramMaker
             curDiagram.rightTop = rt;
             curDiagram.leftBottom = lb;
             curDiagram.rightBottom= rb;
-            
 
             stageAdd = false; // end of add stage 
             stageWait = true;
             diagrams.Add(curDiagram);
-            curDiagram.createPins(); // must be next to set lt, rt, lb, rb
+            curDiagram.createPins(); // this line must be next to set lt, rt, lb, rb
             curDiagram = new Diagram(); // init for waiting next Diagram
         }
 
@@ -182,9 +181,9 @@ namespace ImgBasedDiagramMaker
 
                 stageAdd = false;
             }
-            else if(stageWait || stageUpdate)     // wait or update stage
+            else if (stageWait || stageUpdate)     // wait or update stage
             {
-                for (int i=0; i < diagrams.Count; i++)
+                for (int i = 0; i < diagrams.Count; i++)
                 {
                     if (diagrams[i].contains(e.Location))
                     {
@@ -192,19 +191,21 @@ namespace ImgBasedDiagramMaker
                         {
                             System.Console.WriteLine("diagram clicked!");
                             updateCandidateIndex = i; // set candidate of updating diagram
-                            timerForLongClick.Interval = 1500;
+                            timerForLongClick.Interval = 500;
                             timerForLongClick.Start();
                             timerForLongClick.Tick += new EventHandler(goToUpdateStage);
 
                             break; // BREAK for waiting upcoming update stage
-                        } else
+                        }
+                        else
                             return; // return for nothing to do with updating stage diagram
                                     // updating stage diagram must be controlled in Mouse Move Event Callback
                     }
+                }
 
-
-                    /* click event for OUT OF diagrams (background click event) */
-
+                /* click event for OUT OF diagrams (background click event) */
+                for (int i = 0; i < diagrams.Count; i++)
+                {
                     // updated stage TO waiting stage
                     if (stageUpdate)
                     {
@@ -214,13 +215,11 @@ namespace ImgBasedDiagramMaker
                         // for removing Pins
                         if (!diagrams[i].contains(e.Location))
                             diagrams[i].isUpdateStage = false;
-                        
-                        this.reDraw();
+
+                        this.reDraw(null);
                     }
-
-
-                } // end of for diagrams
-            }
+                }
+            } // end of else if stageWait || stageUpdate
         }
 
         private void panelCanvas_MouseUp(object sender, MouseEventArgs e)
@@ -234,18 +233,8 @@ namespace ImgBasedDiagramMaker
 
         private void panelCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if (stageAdd) // adding stage
-            {
-                this.panelCanvas.Refresh();
-                if (curDiagram.isImgDiagram) // Translate Img Diagram
-                {
-                    tempGraphics.DrawImage(bmpImg, e.X, e.Y);
-                }
-                else                         // Redraw Rectangle
-                {
-                    tempGraphics.DrawRectangle(penRect, e.X, e.Y, initImgW, initImgH);
-                }
-            }
+            if(stageAdd)
+                reDraw(e);
             //else if()
             //{
 
@@ -261,13 +250,31 @@ namespace ImgBasedDiagramMaker
             stageUpdate = true;
 
             System.Console.WriteLine("Update stage of diag index "+ updateCandidateIndex + "!!");
-            reDraw();
+            reDraw(null);
         }
 
-        private void reDraw()
+        private void reDraw(MouseEventArgs e)
         {
             this.panelCanvas.Refresh();
-            for(int i=0; i < diagrams.Count; i++)
+
+            if (stageAdd) // adding stage
+            {
+                if (curDiagram.isImgDiagram) // Translate Img Diagram
+                {
+                    tempGraphics.DrawImage(bmpImg, e.X, e.Y);
+                }
+                else                         // Redraw Rectangle
+                {
+                    tempGraphics.DrawRectangle(penRect, e.X, e.Y, initImgW, initImgH);
+                }
+            }
+
+
+
+             /** draw all saved **/
+
+            // draw classes
+            for (int i = 0; i < diagrams.Count; i++)
             {
                 // draw classes
                 Rectangle tempRect = diagrams[i].getRect();
@@ -284,32 +291,38 @@ namespace ImgBasedDiagramMaker
                 {
                     tempGraphics.DrawRectangle(penRect, tempRect);
                 }
+            }
 
-                // draw pins
-                if (diagrams[i].isUpdateStage)
+            // draw pins
+            if (stageUpdate)
+            {
+                if (diagrams[updateCandidateIndex].isUpdateStage)
                 {
                     for (int j = 0; j < 8; j++)
                     {
                         Pen p = new Pen(Color.Violet, 4);
                         Rectangle rect = new Rectangle();
                         Graphics graphics = this.panelCanvas.CreateGraphics();
-                        rect = diagrams[i].getPinRect(j);
+                        rect = diagrams[updateCandidateIndex].getPinRect(j);
                         graphics.DrawRectangle(p, rect);
                         gPins.Add(graphics); // for removing after
+                        diagrams[updateCandidateIndex].isUpdateStage = false;
                     }
-
-                    return; // end of redrawing for NOT removing pins
                 }
             }
 
-            // if NOT returned, remove pins
-            for (int i = 0; i < 8; i++)
+            // remove pins
+            else if (stageWait)
             {
-                gPins.RemoveAt(0);
+                if (gPins.Count != 0)
+                { 
+                    for (int i = 0; i < 8; i++)
+                    {
+                        gPins.RemoveAt(0);
+                    }
+                }
             }
 
-        }
-
-       
-    }
-}
+        } // end of reDraw()
+    } // end of Form class
+} //end of Namespace
