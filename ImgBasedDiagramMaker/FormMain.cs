@@ -37,7 +37,7 @@ namespace ImgBasedDiagramMaker
 
 
                 // string prog = "C:\\Users\\kjh\\Documents\\Visual Studio 2015\\Projects\\MiDiagram1\\MiDiagram1\\bin\\Debug\\MiDiagram1.exe";
-                Process.Start("MiDiagram1.exe", fileName);
+               // Process.Start("MiDiagram1.exe", fileName);
 
                 /*
                 System.Threading.Thread t = new System.Threading.Thread(new System.Threading.ThreadStart(ThreadProc));
@@ -64,7 +64,7 @@ namespace ImgBasedDiagramMaker
 
 
                 // string prog = "C:\\Users\\kjh\\Documents\\Visual Studio 2015\\Projects\\MiDiagram1\\MiDiagram1\\bin\\Debug\\MiDiagram1.exe";
-                Process.Start("MiDiagram1.exe", fileName);
+                Process.Start("ImgBasedDiagramMaker.exe", fileName);
             }
         }
 
@@ -90,7 +90,17 @@ namespace ImgBasedDiagramMaker
 
         private void 이미지기반ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-           // addMovableImgDiagram();
+            OpenFileDialog ofd = new OpenFileDialog();
+            DialogResult dr = ofd.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+
+                string fileName = ofd.FileName.ToString();
+                
+                //Console.WriteLine(ofd.SafeFileName.ToString());
+               addMovableImgDiagram(fileName);
+             
+            }
         }
 
         private void 일반사각형ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -310,6 +320,9 @@ namespace ImgBasedDiagramMaker
 
         }
 
-       
+        private void panelCanvas_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
