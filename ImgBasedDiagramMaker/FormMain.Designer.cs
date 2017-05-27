@@ -60,6 +60,7 @@
             this.다이어그램ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
+
             this.menuStrip1.Size = new System.Drawing.Size(1482, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
@@ -73,12 +74,13 @@
             this.이미지로저장ToolStripMenuItem,
             this.종료ToolStripMenuItem});
             this.파일ToolStripMenuItem.Name = "파일ToolStripMenuItem";
-            this.파일ToolStripMenuItem.Size = new System.Drawing.Size(51, 24);
+            this.파일ToolStripMenuItem.Size = new System.Drawing.Size(43, 20);
             this.파일ToolStripMenuItem.Text = "파일";
             // 
             // 열기ToolStripMenuItem
             // 
             this.열기ToolStripMenuItem.Name = "열기ToolStripMenuItem";
+
             this.열기ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.열기ToolStripMenuItem.Text = "열기";
             this.열기ToolStripMenuItem.Click += new System.EventHandler(this.열기ToolStripMenuItem_Click);
@@ -89,6 +91,7 @@
             this.새창열기ToolStripMenuItem.Size = new System.Drawing.Size(181, 26);
             this.새창열기ToolStripMenuItem.Text = "새창 열기";
             this.새창열기ToolStripMenuItem.Click += new System.EventHandler(this.새창열기ToolStripMenuItem_Click);
+
             // 
             // 저장ToolStripMenuItem
             // 
@@ -114,7 +117,7 @@
             // 다이어그ToolStripMenuItem
             // 
             this.다이어그ToolStripMenuItem.Name = "다이어그ToolStripMenuItem";
-            this.다이어그ToolStripMenuItem.Size = new System.Drawing.Size(12, 24);
+            this.다이어그ToolStripMenuItem.Size = new System.Drawing.Size(12, 20);
             // 
             // 다이어그램ToolStripMenuItem
             // 
@@ -122,7 +125,7 @@
             this.클래스ToolStripMenuItem1,
             this.관계ToolStripMenuItem1});
             this.다이어그램ToolStripMenuItem.Name = "다이어그램ToolStripMenuItem";
-            this.다이어그램ToolStripMenuItem.Size = new System.Drawing.Size(96, 24);
+            this.다이어그램ToolStripMenuItem.Size = new System.Drawing.Size(79, 20);
             this.다이어그램ToolStripMenuItem.Text = "다이어그램";
             // 
             // 클래스ToolStripMenuItem1
@@ -160,13 +163,13 @@
             // 상속ToolStripMenuItem1
             // 
             this.상속ToolStripMenuItem1.Name = "상속ToolStripMenuItem1";
-            this.상속ToolStripMenuItem1.Size = new System.Drawing.Size(114, 26);
+            this.상속ToolStripMenuItem1.Size = new System.Drawing.Size(98, 22);
             this.상속ToolStripMenuItem1.Text = "상속";
             // 
             // 의존ToolStripMenuItem1
             // 
             this.의존ToolStripMenuItem1.Name = "의존ToolStripMenuItem1";
-            this.의존ToolStripMenuItem1.Size = new System.Drawing.Size(114, 26);
+            this.의존ToolStripMenuItem1.Size = new System.Drawing.Size(98, 22);
             this.의존ToolStripMenuItem1.Text = "의존";
             // 
             // 클래스ToolStripMenuItem
@@ -187,31 +190,30 @@
             // 상속ToolStripMenuItem
             // 
             this.상속ToolStripMenuItem.Name = "상속ToolStripMenuItem";
-            this.상속ToolStripMenuItem.Size = new System.Drawing.Size(114, 26);
+            this.상속ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             this.상속ToolStripMenuItem.Text = "상속";
             // 
             // 의존ToolStripMenuItem
             // 
             this.의존ToolStripMenuItem.Name = "의존ToolStripMenuItem";
-            this.의존ToolStripMenuItem.Size = new System.Drawing.Size(114, 26);
+            this.의존ToolStripMenuItem.Size = new System.Drawing.Size(98, 22);
             this.의존ToolStripMenuItem.Text = "의존";
             // 
             // panelCanvas
             // 
             this.panelCanvas.BackColor = System.Drawing.Color.White;
-            this.panelCanvas.Location = new System.Drawing.Point(0, 31);
+            this.panelCanvas.Location = new System.Drawing.Point(0, 25);
             this.panelCanvas.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panelCanvas.Name = "panelCanvas";
             this.panelCanvas.Size = new System.Drawing.Size(1500, 900);
             this.panelCanvas.TabIndex = 0;
-            this.panelCanvas.Paint += new System.Windows.Forms.PaintEventHandler(this.panelCanvas_Paint);
             this.panelCanvas.MouseDown += new System.Windows.Forms.MouseEventHandler(this.panelCanvas_MouseDown);
             this.panelCanvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelCanvas_MouseMove);
             this.panelCanvas.MouseUp += new System.Windows.Forms.MouseEventHandler(this.panelCanvas_MouseUp);
             // 
             // FormMain
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1482, 953);
             this.Controls.Add(this.panelCanvas);
@@ -221,7 +223,6 @@
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "FormMain";
             this.Text = "FormMain";
-            this.Load += new System.EventHandler(this.FormMain_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
