@@ -20,30 +20,85 @@ namespace ImgBasedDiagramMaker
             InitializeComponent();
         }
 
+        private void openFileSave(string path)
+        {
+           
+
+            System.IO.StreamWriter file = new System.IO.StreamWriter(path);
+            int nr_list = diagrams.Count;
+            file.WriteLine(nr_list.ToString());
+            for (int i = 0; i < nr_list; i++)
+            {
+                Diagram di = diagrams[i];
+                if (di.isImgDiagram)
+                {
+                    file.WriteLine("1");
+                    file.WriteLine(di.imageUrl);
+                }
+                else file.WriteLine("2");
+
+                file.WriteLine(Convert.ToString(di.leftTop.X));
+                file.WriteLine(Convert.ToString(di.leftTop.Y));
+                file.WriteLine(Convert.ToString(di.rightTop.X));
+                file.WriteLine(Convert.ToString(di.rightTop.Y));
+                file.WriteLine(Convert.ToString(di.leftBottom.X));
+                file.WriteLine(Convert.ToString(di.leftBottom.Y));
+                file.WriteLine(Convert.ToString(di.rightBottom.X));
+                file.WriteLine(Convert.ToString(di.rightBottom.Y));
+            }
+
+            file.Close();
+        }
+
+        private void openFileRead(string path)
+        {
+            Point leftT = new Point();  Point rightT = new Point();
+            Point leftB = new Point();  Point rightB = new Point();
+            string url = "";
+            System.IO.StreamReader rd = new System.IO.StreamReader(path);
+            int nr_class = Int32.Parse(rd.ReadLine());
+            for(int i=0; i<nr_class; i++)
+            {
+                int type = Int32.Parse(rd.ReadLine());
+                if(type == 1) // IMG 
+                {
+                    url = rd.ReadLine();
+                }
+                leftT.X = Int32.Parse(rd.ReadLine());
+                leftT.Y = Int32.Parse(rd.ReadLine());
+                rightT.X = Int32.Parse(rd.ReadLine());
+                rightT.Y = Int32.Parse(rd.ReadLine());
+                leftB.X = Int32.Parse(rd.ReadLine());
+                leftB.Y = Int32.Parse(rd.ReadLine());
+                rightB.X = Int32.Parse(rd.ReadLine());
+                rightB.Y = Int32.Parse(rd.ReadLine());
+
+                if(type==1)
+                {
+                    addMovableImgDiagram(url);
+                    addCurDiagramToList(leftT, rightT, leftB, rightB);
+
+                } else if( type ==2)
+                {
+                    addMovableRectDiagram();
+                    addCurDiagramToList(leftT, rightT, leftB, rightB);
+
+                }
+            }
+        }
+
         private void 열기ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            /* proprocess */
+            diagrams.Clear();
+            gPins.Clear();
+
             OpenFileDialog ofd = new OpenFileDialog();
 
             DialogResult dr = ofd.ShowDialog();
             if (dr == DialogResult.OK)
             {
-
-                string fileName = ofd.SafeFileName;
-                string fileFullName = ofd.FileName;
-                string filePath = fileFullName.Replace(fileName, "");
-
-                String text = System.IO.File.ReadAllText(ofd.FileName);
-
-
-
-                // string prog = "C:\\Users\\kjh\\Documents\\Visual Studio 2015\\Projects\\MiDiagram1\\MiDiagram1\\bin\\Debug\\MiDiagram1.exe";
-               // Process.Start("MiDiagram1.exe", fileName);
-
-                /*
-                System.Threading.Thread t = new System.Threading.Thread(new System.Threading.ThreadStart(ThreadProc));
-                t.Start();
-                */
-
+                openFileRead(ofd.FileName);                               
             }
         }
 
@@ -61,9 +116,6 @@ namespace ImgBasedDiagramMaker
 
                 String text = System.IO.File.ReadAllText(ofd.FileName);
 
-
-
-                // string prog = "C:\\Users\\kjh\\Documents\\Visual Studio 2015\\Projects\\MiDiagram1\\MiDiagram1\\bin\\Debug\\MiDiagram1.exe";
                 Process.Start("ImgBasedDiagramMaker.exe", fileName);
             }
         }
@@ -76,6 +128,7 @@ namespace ImgBasedDiagramMaker
 
             if (sfd.ShowDialog() == DialogResult.OK)
             {
+                openFileSave(sfd.FileName);
                 //System.IO.StreamWriter file = new System.IO.StreamWriter(sfd.FileName);
                 ////int nr_list = di.member.Count;
                 //file.WriteLine(nr_list.ToString());
