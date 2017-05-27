@@ -22,11 +22,14 @@ namespace ImgBasedDiagramMaker
         public bool isUpdateStage { get; set; }
         public string imageUrl { get; set; }
 
+        // constructor
         public Diagram()
         {
             pinRects = new List<Rectangle>();
             isUpdateStage = false;
         }
+
+
 
         public Rectangle getRect()
         {
