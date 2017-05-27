@@ -248,8 +248,17 @@ namespace ImgBasedDiagramMaker
         bool stageWait = false;     // waiting long click in diagram
         bool stageUpdate = false;   // Updating with Pins
 
+        int LineAdd = 0; // default = 0, AssociationLine = 1, DependencyLine = 2
+        bool LineWait = false;
+        bool predrawLine = false;
+        bool LineUpdate = false;
+
+        Line Selectline = null;
+        moveline moveline_instance = null;
+
         List<Diagram> diagrams = new List<Diagram>();
         List<Graphics> gPins = new List<Graphics>();
+        List<Line> lines = new List<Line>();
         Diagram curDiagram = new Diagram();
 
         int initImgW = 50;
@@ -308,12 +317,54 @@ namespace ImgBasedDiagramMaker
             curDiagram = new Diagram(); // init for waiting next Diagram
         }
 
+        // 상속 관계
+        private void addAssociationLine()
+        {
+            tempGraphics = this.panelCanvas.CreateGraphics();
+            LineAdd = 1;
+            predrawLine = false;
+            Cursor = Cursors.Cross;
+        }
+        // 의존 관계
+        private void addDependencyLine()
+        {
+            tempGraphics = this.panelCanvas.CreateGraphics();
+            LineAdd = 2;
+            predrawLine = false;
+            Cursor = Cursors.Cross;
+        }
 
 
         /** Event callbacks **/
 
         private void panelCanvas_MouseDown(object sender, MouseEventArgs e)
         {
+            //////////
+            if (LineAdd == 0)
+            {
+                RefreshLineSelection(e.Location);
+            }
+            else
+            {
+                if (e.Button != MouseButtons.Left) return;
+                var dragLine = new Line();
+                int size = 10;
+                var Rec = new Rectangle();
+                Rec.X = e.X - size / 2;
+                Rec.Y = e.Y - size / 2;
+                Rec.Height = size;
+                Rec.Width = size;
+                lines.Add(dragLine);
+                predrawLine = true;
+
+                dragLine.Start_boundary = Rec;
+                dragLine.Start = dragLine.End = e.Location;
+                dragLine.type = LineAdd;
+
+                this.reDraw(null);
+            }
+            //////////
+
             if (stageAdd) // adding stage
             {
                 addCurDiagramToList(new Point(e.X, e.Y),
@@ -402,11 +453,35 @@ namespace ImgBasedDiagramMaker
                 timerForLongClick.Stop();
                 timerForLongClick = new Timer(); // reset timer
             }
+            ////////////
+            if (LineAdd != 0)
+            {
+                var dragLine = lines.Last();
+                dragLine.End_boundary = Boundary(e.Location, e);
+                dragLine.End = e.Location;
+                LineAdd = 0;
+                Cursor = Cursors.Default;
+                reDraw(e);
+            }
+            ////////////
         }
 
         private void panelCanvas_MouseMove(object sender, MouseEventArgs e)
         {
-            if(stageAdd)
+
+            ////////////
+            if (LineAdd != 0)
+            {
+                if (predrawLine)
+                {
+                    var dragLine = lines.Last();
+                    dragLine.End = e.Location;
+                    reDraw(e);
+                }
+            }
+            ////////////
+
+            if (stageAdd)
             {
                 reDraw(e);
             }
@@ -488,6 +563,32 @@ namespace ImgBasedDiagramMaker
             }
         }
 
+
+
+        private Rectangle Boundary(Point p)
+        {
+            int size = 10;
+            var Rec = new Rectangle();
+            Rec.X = p.X - size / 2;
+            Rec.Y = p.Y - size / 2;
+            Rec.Height = size;
+            Rec.Width = size;
+            return Rec;
+        }
+
+        private Rectangle Boundary(Point p, MouseEventArgs e)
+        {
+            int size = 10;
+            var Rec = new Rectangle();
+            Rec.X = e.Location.X - size / 2;
+            Rec.Y = e.Location.Y - size / 2;
+            Rec.Height = size;
+            Rec.Width = size;
+            return Rec;
+        }
+
+
+
         private void goToUpdateStage(object sender, EventArgs e)
         {
             timerForLongClick.Stop();
@@ -510,6 +611,47 @@ namespace ImgBasedDiagramMaker
 
         private void reDraw(MouseEventArgs e)
         {
+
+            tempGraphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.High;
+            tempGraphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            /** draw Line **/
+            System.Drawing.Drawing2D.AdjustableArrowCap custCap =
+                new System.Drawing.Drawing2D.AdjustableArrowCap(7, 5, false);
+
+            Pen pen2 = new Pen(Color.Violet, 2);
+            foreach (var line in lines)
+            {
+                var color = line == Selectline ? Color.Red : Color.Black;
+                line.pin_visible = line == Selectline ? true : false;
+                Pen pen = new Pen(color, 2);
+                pen.StartCap = LineCap.Flat;
+                pen.EndCap = LineCap.Custom;
+                pen.CustomEndCap = custCap;
+                using (var p = new Pen(line.Color, line.Width))
+                {
+                    switch (line.type)
+                    {
+                        case 2:
+                            pen.DashStyle = DashStyle.DashDotDot;
+                            break;
+                        case 1:
+                            pen.DashStyle = DashStyle.Solid;
+                            break;
+                    }
+
+                    tempGraphics.DrawLine(pen, line.Start, line.End);
+                    if (line.pin_visible)
+                    {
+                        tempGraphics.DrawRectangle(pen2, line.Start_boundary);
+                        tempGraphics.DrawRectangle(pen2, line.End_boundary);
+                    }
+                }
+            }
+
+
+
+
             Console.WriteLine("reDraw");
             this.panelCanvas.Refresh();
 
@@ -593,6 +735,44 @@ namespace ImgBasedDiagramMaker
             }
 
         } // end of reDraw()
+
+
+
+        private void RefreshLineSelection(Point point)
+        {
+            var selectedLine = FindLineByPoint(lines, point);
+            if (selectedLine != null)
+                if (selectedLine != this.Selectline)
+                {
+                    this.Selectline = selectedLine;
+                    this.Invalidate();
+                }
+            if (moveline_instance != null)
+            {
+                this.Invalidate();
+            }
+        }
+        static Line FindLineByPoint(List<Line> _lines, Point p)
+        {
+            var size = 10;
+            var buffer = new Bitmap(size * 2, size * 2);
+            foreach (var line in _lines)
+            {
+                //draw each line on small region around current point p and check pixel in point p 
+
+                using (var g = Graphics.FromImage(buffer))
+                {
+                    g.Clear(Color.Black);
+                    g.DrawLine(new Pen(Color.Green, 3), line.Start.X - p.X + size, line.Start.Y - p.Y + size, line.End.X - p.X + size, line.End.Y - p.Y + size);
+                }
+
+                if (buffer.GetPixel(size, size).ToArgb() != Color.Black.ToArgb())
+                    return line;
+            }
+            return null;
+        }
+
+
 
     } // end of Form class
 } //end of Namespace
