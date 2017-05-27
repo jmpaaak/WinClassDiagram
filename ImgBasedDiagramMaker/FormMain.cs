@@ -140,6 +140,15 @@ namespace ImgBasedDiagramMaker
         Timer timerForLongClick = new Timer(); // for waiting stage
         int updateCandidateIndex = -1;            // for waiting stage
 
+        int draggedPinIndex = -1;
+        int resizableDiagramIndex = -1;
+        Rectangle rectOld = new Rectangle();
+        Rectangle rectUpdated = new Rectangle();
+
+        Point tempPos = new Point(); // only used for movable updating
+        bool dragFlag = false;
+
+
         // 주어진 url에 따라 Image Diagram이 마우스를 따라다님
         private void addMovableImgDiagram(string url)
         {
@@ -193,6 +202,7 @@ namespace ImgBasedDiagramMaker
             }
             else if (stageWait || stageUpdate)     // wait or update stage
             {
+                
                 for (int i = 0; i < diagrams.Count; i++)
                 {
                     if (diagrams[i].contains(e.Location))
@@ -203,22 +213,49 @@ namespace ImgBasedDiagramMaker
                             updateCandidateIndex = i; // set candidate of updating diagram
                             timerForLongClick.Interval = 500;
                             timerForLongClick.Start();
+                            tempPos = new Point(e.X, e.Y); // only
                             timerForLongClick.Tick += new EventHandler(goToUpdateStage);
 
+                            draggedPinIndex = -1;
                             break; // BREAK for waiting upcoming update stage
                         }
                         else
-                            return; // return for nothing to do with updating stage diagram
-                                    // updating stage diagram must be controlled in Mouse Move Event Callback
+                        {
+                            for (int k = 0; k < 8; k++)
+                            {
+                                System.Console.WriteLine(diagrams[i].getPinRect(k).X+" "+ diagrams[i].getPinRect(k).Y+ " getpin!! k: "+k);
+
+                                // if e.Location in Pin Rect, find Pin index and save current rect to OLD
+                                if (diagrams[i].getPinRect(k).Contains(e.Location))
+                                {
+                                    System.Console.WriteLine(" resize!!");
+
+                                    resizableDiagramIndex = i;
+                                    draggedPinIndex = k;
+                                    rectOld = diagrams[i].getRect();
+
+                                    break;
+                                }
+
+                                resizableDiagramIndex = -1;
+                                draggedPinIndex = -1;
+
+                                //if (k == 7) return; // return for doing next with updating stage diagram
+                                                    // updating stage diagram must be continued in Mouse Move Event Callback
+                            }
+                        }
                     }
                 }
+
 
                 /* click event for OUT OF diagrams (background click event) */
                 for (int i = 0; i < diagrams.Count; i++)
                 {
                     // updated stage TO waiting stage
-                    if (stageUpdate)
+                    if (stageUpdate && resizableDiagramIndex == -1)
                     {
+                        System.Console.WriteLine(" int change!!");
+
                         stageWait = true;  // start of wait stage
                         stageUpdate = false; // end of update stage
 
@@ -229,13 +266,16 @@ namespace ImgBasedDiagramMaker
                         this.reDraw(null);
                     }
                 }
+
             } // end of else if stageWait || stageUpdate
         }
 
         private void panelCanvas_MouseUp(object sender, MouseEventArgs e)
         {
-            if (!stageAdd) // only waiting stage
+            if (!stageAdd)
             {
+                draggedPinIndex = -1;
+                dragFlag = false; // release drag
                 timerForLongClick.Stop();
                 timerForLongClick = new Timer(); // reset timer
             }
@@ -244,11 +284,43 @@ namespace ImgBasedDiagramMaker
         private void panelCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             if(stageAdd)
+            {
                 reDraw(e);
-            //else if()
-            //{
+            }
+            else if(stageUpdate)
+            {
+                // drag event for movable 
+                if(dragFlag && (draggedPinIndex < 0))
+                {
+                    int diffX = rectOld.X - e.Location.X;
+                    int diffY = rectOld.Y - e.Location.Y;
+                    rectUpdated = new Rectangle(rectOld.Left - diffX - rectOld.Width/2, 
+                                                rectOld.Top - diffY - rectOld.Height/2,
+                                                rectOld.Width, rectOld.Height);
+                }
+                else if (draggedPinIndex == 0)
+                {
+                    // to do
+                }
+                else if (draggedPinIndex == 1)
+                {
+                    int diffX = rectOld.X - e.Location.X;
+                    rectUpdated = new Rectangle(rectOld.Left - diffX,
+                                                rectOld.Top,
+                                                rectOld.Width + diffX, rectOld.Height);
+                }
+                else if (draggedPinIndex == 6)
+                {
+                    int diffX = rectOld.X - e.Location.X;
+                    rectUpdated = new Rectangle(rectOld.Left,
+                                                rectOld.Top,
+                                                rectOld.Width - diffX - rectOld.Width, rectOld.Height);
+                }
 
-            //}
+                
+                reDraw(null);
+
+            }
         }
 
         private void goToUpdateStage(object sender, EventArgs e)
@@ -258,6 +330,14 @@ namespace ImgBasedDiagramMaker
 
             diagrams[updateCandidateIndex].isUpdateStage = true;
             stageUpdate = true;
+
+            // save cur rect for movable
+            if (draggedPinIndex < 0)
+            {
+                dragFlag = true;
+                rectOld = diagrams[updateCandidateIndex].getRect();
+                rectUpdated = rectOld; // initial position set !
+            }
 
             System.Console.WriteLine("Update stage of diag index "+ updateCandidateIndex + "!!");
             reDraw(null);
@@ -280,7 +360,6 @@ namespace ImgBasedDiagramMaker
             }
 
 
-
              /** draw all saved **/
 
             // draw classes
@@ -288,6 +367,17 @@ namespace ImgBasedDiagramMaker
             {
                 // draw classes
                 Rectangle tempRect = diagrams[i].getRect();
+
+                // updating movable
+                if (i == updateCandidateIndex && !rectUpdated.IsEmpty)
+                {
+                    tempRect = rectUpdated;
+
+                    // for repositioning Pins
+                    diagrams[i].setRect(tempRect);
+                    diagrams[i].createPins();
+                }
+
                 Graphics tempGraphics = this.panelCanvas.CreateGraphics();
 
                 if (diagrams[i].isImgDiagram)
@@ -316,22 +406,26 @@ namespace ImgBasedDiagramMaker
                         rect = diagrams[updateCandidateIndex].getPinRect(j);
                         graphics.DrawRectangle(p, rect);
                         gPins.Add(graphics); // for removing after
-                        diagrams[updateCandidateIndex].isUpdateStage = false;
+                       // diagrams[updateCandidateIndex].isUpdateStage = false;
                     }
                 }
             }
 
             // remove pins
-            else if (stageWait)
+            else if (stageWait && resizableDiagramIndex == -1)
             {
                 if (gPins.Count != 0)
-                { 
+                {
                     for (int i = 0; i < 8; i++)
                     {
                         gPins.RemoveAt(0);
+                        diagrams[updateCandidateIndex].isUpdateStage = false;
                     }
                 }
             }
+
         } // end of reDraw()
+
+
     } // end of Form class
 } //end of Namespace
