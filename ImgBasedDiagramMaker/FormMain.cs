@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Drawing.Drawing2D;
+using System.Diagnostics;
 
 namespace ImgBasedDiagramMaker
 {
@@ -16,9 +18,97 @@ namespace ImgBasedDiagramMaker
         public FormMain()
         {
             InitializeComponent();
-            //addMovableRectDiagram(); //test
-            addMovableImgDiagram("../../test_img.jpg"); //test
         }
+
+        private void 열기ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            DialogResult dr = ofd.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+
+                string fileName = ofd.SafeFileName;
+                string fileFullName = ofd.FileName;
+                string filePath = fileFullName.Replace(fileName, "");
+
+                String text = System.IO.File.ReadAllText(ofd.FileName);
+
+
+
+                // string prog = "C:\\Users\\kjh\\Documents\\Visual Studio 2015\\Projects\\MiDiagram1\\MiDiagram1\\bin\\Debug\\MiDiagram1.exe";
+                Process.Start("MiDiagram1.exe", fileName);
+
+                /*
+                System.Threading.Thread t = new System.Threading.Thread(new System.Threading.ThreadStart(ThreadProc));
+                t.Start();
+                */
+
+            }
+        }
+
+        private void 새창으로열기ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+
+            DialogResult dr = ofd.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+
+                string fileName = ofd.SafeFileName;
+                string fileFullName = ofd.FileName;
+                string filePath = fileFullName.Replace(fileName, "");
+
+                String text = System.IO.File.ReadAllText(ofd.FileName);
+
+
+
+                // string prog = "C:\\Users\\kjh\\Documents\\Visual Studio 2015\\Projects\\MiDiagram1\\MiDiagram1\\bin\\Debug\\MiDiagram1.exe";
+                Process.Start("MiDiagram1.exe", fileName);
+            }
+        }
+
+        private void 저장ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "다른 이름으로 저장";
+            sfd.DefaultExt = "txt";
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                //System.IO.StreamWriter file = new System.IO.StreamWriter(sfd.FileName);
+                ////int nr_list = di.member.Count;
+                //file.WriteLine(nr_list.ToString());
+                //for (int i = 0; i < nr_list; i++)
+                //{
+                //    file.WriteLine(di.member[i]);
+
+                //}
+                //file.Close();
+            }
+        }
+
+        private void 이미지기반ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+           // addMovableImgDiagram();
+        }
+
+        private void 일반사각형ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            addMovableRectDiagram();
+        }
+
+        private void 종료ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+
+        /**************************************************************************************************/
+        /**************************************************************************************************/
+        /**************************************************************************************************/
+
+
 
         /** stage variables **/
         bool stageAdd = false;      // moving diagram for adding
@@ -219,5 +309,7 @@ namespace ImgBasedDiagramMaker
             }
 
         }
+
+       
     }
 }
