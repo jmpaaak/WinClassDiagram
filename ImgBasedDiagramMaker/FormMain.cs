@@ -15,14 +15,29 @@ namespace ImgBasedDiagramMaker
 {
     public partial class FormMain : Form
     {
-        public FormMain()
+        public FormMain(string path)
         {
             InitializeComponent();
+            
+            if(path=="")
+            {
+                tempGraphics = this.panelCanvas.CreateGraphics();
+                curDiagram = new Diagram();
+                stageWait = true;
+            } else
+            {
+                Console.WriteLine("FormMain");
+                tempGraphics = this.panelCanvas.CreateGraphics();            
+                curDiagram = new Diagram();
+                stageWait = true;
+                openFileRead(path);
+            }
         }
 
         private void openFileSave(string path)
         {
-           
+
+          
 
             System.IO.StreamWriter file = new System.IO.StreamWriter(path);
             int nr_list = diagrams.Count;
@@ -45,6 +60,7 @@ namespace ImgBasedDiagramMaker
                 file.WriteLine(Convert.ToString(di.leftBottom.Y));
                 file.WriteLine(Convert.ToString(di.rightBottom.X));
                 file.WriteLine(Convert.ToString(di.rightBottom.Y));
+                Console.WriteLine(Convert.ToString(di.rightBottom.Y));
             }
 
             file.Close();
@@ -52,12 +68,14 @@ namespace ImgBasedDiagramMaker
 
         private void openFileRead(string path)
         {
+            Console.WriteLine(path);
             Point leftT = new Point();  Point rightT = new Point();
             Point leftB = new Point();  Point rightB = new Point();
             string url = "";
             System.IO.StreamReader rd = new System.IO.StreamReader(path);
             int nr_class = Int32.Parse(rd.ReadLine());
-            for(int i=0; i<nr_class; i++)
+            Console.WriteLine(Convert.ToString(nr_class));
+            for (int i=0; i<nr_class; i++)
             {
                 int type = Int32.Parse(rd.ReadLine());
                 if(type == 1) // IMG 
@@ -72,26 +90,29 @@ namespace ImgBasedDiagramMaker
                 leftB.Y = Int32.Parse(rd.ReadLine());
                 rightB.X = Int32.Parse(rd.ReadLine());
                 rightB.Y = Int32.Parse(rd.ReadLine());
-
+                Console.WriteLine(Convert.ToString(rightB.Y));
                 if(type==1)
                 {
                     addMovableImgDiagram(url);
                     addCurDiagramToList(leftT, rightT, leftB, rightB);
+                    Console.WriteLine(Convert.ToString("IMG"));
 
                 } else if( type ==2)
                 {
                     addMovableRectDiagram();
                     addCurDiagramToList(leftT, rightT, leftB, rightB);
-
+                    Console.WriteLine(Convert.ToString("NOIMG"));
                 }
             }
+            reDraw(null);
         }
 
         private void 열기ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             /* proprocess */
-            diagrams.Clear();
-            gPins.Clear();
+
+           
+
 
             OpenFileDialog ofd = new OpenFileDialog();
 
@@ -102,42 +123,31 @@ namespace ImgBasedDiagramMaker
             }
         }
 
-        private void 새창으로열기ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void 새창열기ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
 
+            /*
+            OpenFileDialog ofd = new OpenFileDialog();
             DialogResult dr = ofd.ShowDialog();
+
             if (dr == DialogResult.OK)
             {
-
-                string fileName = ofd.SafeFileName;
-                string fileFullName = ofd.FileName;
-                string filePath = fileFullName.Replace(fileName, "");
-
-                String text = System.IO.File.ReadAllText(ofd.FileName);
-
-                Process.Start("ImgBasedDiagramMaker.exe", fileName);
+                Process.Start("ImgBasedDiagramMaker.exe", ofd.FileName);
             }
+            */
+            Process.Start("ImgBasedDiagramMaker.exe", "");
         }
 
         private void 저장ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Title = "다른 이름으로 저장";
-            sfd.DefaultExt = "txt";
-
+            sfd.DefaultExt = "dia";
+            sfd.Filter = "Diagram File(*.dia)|*.dia";
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 openFileSave(sfd.FileName);
-                //System.IO.StreamWriter file = new System.IO.StreamWriter(sfd.FileName);
-                ////int nr_list = di.member.Count;
-                //file.WriteLine(nr_list.ToString());
-                //for (int i = 0; i < nr_list; i++)
-                //{
-                //    file.WriteLine(di.member[i]);
-
-                //}
-                //file.Close();
+             
             }
         }
 
@@ -154,6 +164,66 @@ namespace ImgBasedDiagramMaker
                addMovableImgDiagram(fileName);
              
             }
+        }
+
+        private void 이미지로저장ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "다른 이름으로 저장";
+            sfd.Filter = "Bitmap File(*.bmp)|*.bmp|" + "Gif File(*.gif)|*.gif|" + "JPEG File(*.jpg)|*.jpg|" + "PNG File(*.png)|*.png";
+
+
+
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                string fileName = sfd.FileName;
+                Pen blackPen = new Pen(Color.Black, 3);
+                // Rectangle rect = new Rectangle(0, 0, 2000, 2000);
+
+                Bitmap b = new Bitmap(1000, 800);
+                Graphics g = Graphics.FromImage(b);
+                g.Clear(Color.White);
+                for (int i = 0; i < diagrams.Count; i++)
+                {
+                    // draw classes
+                    Rectangle tempRect = diagrams[i].getRect();
+
+                    Console.WriteLine(Convert.ToString(tempRect.X));
+                    Console.WriteLine(Convert.ToString(tempRect.Y));
+                    if (diagrams[i].isImgDiagram)
+                    {
+                        Image img = Image.FromFile(diagrams[i].imageUrl);
+
+                        bmpImg = new Bitmap(img, tempRect.Width, tempRect.Height);
+
+                        g.DrawImage(bmpImg, tempRect.X, tempRect.Y);
+                    }
+                    else
+                    {
+
+                        g.DrawRectangle(penRect, tempRect);
+                    }
+                }
+
+                string strFilExtn = fileName.Remove(0, fileName.Length - 3);
+                switch (strFilExtn)
+                {
+                    case "bmp": b.Save(fileName, System.Drawing.Imaging.ImageFormat.Bmp); break;
+                    case "jpg": b.Save(fileName, System.Drawing.Imaging.ImageFormat.Jpeg); break;
+                    case "gif": b.Save(fileName, System.Drawing.Imaging.ImageFormat.Gif); break;
+                    case "tif": b.Save(fileName, System.Drawing.Imaging.ImageFormat.Tiff); break;
+                    case "png": b.Save(fileName, System.Drawing.Imaging.ImageFormat.Png); break;
+                    default: break;
+                }
+
+
+                // g.DrawRectangle(blackPen,rect);
+                //b.Save(path, System.Drawing.Imaging.ImageFormat.Gif);
+                MessageBox.Show(fileName);
+
+            }
+
         }
 
         private void 일반사각형ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -318,6 +388,7 @@ namespace ImgBasedDiagramMaker
 
         private void reDraw(MouseEventArgs e)
         {
+            Console.WriteLine("reDraw");
             this.panelCanvas.Refresh();
 
             if (stageAdd) // adding stage
@@ -339,6 +410,7 @@ namespace ImgBasedDiagramMaker
             // draw classes
             for (int i = 0; i < diagrams.Count; i++)
             {
+                Console.WriteLine(Convert.ToString(i));
                 // draw classes
                 Rectangle tempRect = diagrams[i].getRect();
                 Graphics tempGraphics = this.panelCanvas.CreateGraphics();
@@ -352,6 +424,7 @@ namespace ImgBasedDiagramMaker
                 }
                 else
                 {
+                    Console.WriteLine("Not IMG");
                     tempGraphics.DrawRectangle(penRect, tempRect);
                 }
             }
@@ -386,5 +459,17 @@ namespace ImgBasedDiagramMaker
                 }
             }
         } // end of reDraw()
+
+        private void panelCanvas_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        
+
+        private void FormMain_Load(object sender, EventArgs e)
+        {
+
+        }
     } // end of Form class
 } //end of Namespace

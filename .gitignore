@@ -424,3 +424,7 @@ __pycache__/
 # BizTalk build output
 
 # End of https://www.gitignore.io/api/csharp,visualstudio
+
+#
+*.txt
+*.das
