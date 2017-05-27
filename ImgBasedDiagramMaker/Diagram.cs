@@ -16,6 +16,7 @@ namespace ImgBasedDiagramMaker
         public Point leftBottom { get; set; }
         public Point rightBottom { get; set; }
         public List<Rectangle> pinRects { get; set; }
+        public TextBox ClassName { get; set; }
 
 
         public bool isImgDiagram { get; set; }

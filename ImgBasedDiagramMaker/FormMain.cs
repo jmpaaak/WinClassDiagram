@@ -177,7 +177,7 @@ namespace ImgBasedDiagramMaker
             curDiagram.rightTop = rt;
             curDiagram.leftBottom = lb;
             curDiagram.rightBottom= rb;
-
+            TextBox new_class_name = new TextBox();
             stageAdd = false; // end of add stage 
             stageWait = true;
             diagrams.Add(curDiagram);
@@ -298,9 +298,12 @@ namespace ImgBasedDiagramMaker
                                                 rectOld.Top - diffY - rectOld.Height/2,
                                                 rectOld.Width, rectOld.Height);
                 }
-                else if (draggedPinIndex == 0)
+                else if (draggedPinIndex == 3)
                 {
-                    // to do
+                    int diffY = rectOld.Y - e.Location.Y;
+                    rectUpdated = new Rectangle(rectOld.Left,
+                                                rectOld.Top - diffY,
+                                                rectOld.Width, rectOld.Height + diffY);
                 }
                 else if (draggedPinIndex == 1)
                 {
@@ -316,8 +319,47 @@ namespace ImgBasedDiagramMaker
                                                 rectOld.Top,
                                                 rectOld.Width - diffX - rectOld.Width, rectOld.Height);
                 }
+                else if (draggedPinIndex == 4)
+                {
+                    int diffY = rectOld.Y - e.Location.Y;
+                    rectUpdated = new Rectangle(rectOld.Left,
+                                                rectOld.Top,
+                                                rectOld.Width, rectOld.Height - diffY - rectOld.Height);
+                }
+                else if (draggedPinIndex == 0)
+                {
+                    int diffX = rectOld.X - e.Location.X;
+                    int diffY = rectOld.Y - e.Location.Y;
+                    rectUpdated = new Rectangle(e.Location.X,
+                                                e.Location.Y,
+                                                rectOld.Width + diffX, rectOld.Height + diffY);
+                }
+                else if (draggedPinIndex == 7)
+                {
+                    int diffX = rectOld.X - e.Location.X;
+                    int diffY = rectOld.Y - e.Location.Y;
+                    rectUpdated = new Rectangle(rectOld.X,
+                                                rectOld.Y,
+                                                + e.Location.X - rectOld.X, - rectOld.Y + e.Location.Y);
+                }
+                else if (draggedPinIndex == 2)
+                {
+                    int diffX = rectOld.X - e.Location.X;
+                    int diffY = rectOld.Y - e.Location.Y;
+                    rectUpdated = new Rectangle(e.Location.X,
+                                                e.Location.Y - rectOld.Height + diffY,
+                                                rectOld.Width + diffX, rectOld.Height - diffY);
+                }
+                else if (draggedPinIndex == 5)
+                {
+                    int diffX = rectOld.X - e.Location.X;
+                    int diffY = rectOld.Y - e.Location.Y;
+                    rectUpdated = new Rectangle(rectOld.X,
+                                                e.Location.Y,
+                                                (e.Location.X - rectOld.X), rectOld.Height + diffY);
+                }
 
-                
+
                 reDraw(null);
 
             }
@@ -425,7 +467,6 @@ namespace ImgBasedDiagramMaker
             }
 
         } // end of reDraw()
-
-
+        
     } // end of Form class
 } //end of Namespace
