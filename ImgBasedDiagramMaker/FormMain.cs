@@ -245,11 +245,15 @@ namespace ImgBasedDiagramMaker
 
         /** stage variables **/
         bool stageAdd = false;      // moving diagram for adding
+        bool diagAdd = false;
+        int stringAdd = 0;      // moving string for adding
         bool stageWait = false;     // waiting long click in diagram
         bool stageUpdate = false;   // Updating with Pins
 
         List<Diagram> diagrams = new List<Diagram>();
         List<Graphics> gPins = new List<Graphics>();
+        List<string> strings = new List<string>();
+        List<Point> stringsPos = new List<Point>();
         Diagram curDiagram = new Diagram();
 
         int initImgW = 50;
@@ -283,6 +287,7 @@ namespace ImgBasedDiagramMaker
             curDiagram.isImgDiagram = true;
             curDiagram.imageUrl = url;
 
+            diagAdd = true; 
             stageAdd = true; // start of add stage
         }
 
@@ -291,8 +296,10 @@ namespace ImgBasedDiagramMaker
         {
             tempGraphics = this.panelCanvas.CreateGraphics();
 
+            diagAdd = true; 
             stageAdd = true; // start of add stage
         }
+
 
         private void addCurDiagramToList(Point lt, Point rt, Point lb, Point rb)
         {
@@ -300,11 +307,42 @@ namespace ImgBasedDiagramMaker
             curDiagram.rightTop = rt;
             curDiagram.leftBottom = lb;
             curDiagram.rightBottom= rb;
-            TextBox new_class_name = new TextBox();
-            stageAdd = false; // end of add stage 
-            stageWait = true;
+
+            //curDiagram.className = strings[0];
+            //curDiagram.props = strings[1];
+            //curDiagram.methods = strings[2];
+
+            //strings.RemoveAt(0);
+            //strings.RemoveAt(0);
+            //strings.RemoveAt(0);
+            //stringAdd = 0;
+            //stageAdd = false; // end of add stage 
+            //stageWait = true;
+            //curDiagram = new Diagram(); // init for waiting next Diagram
             diagrams.Add(curDiagram);
             curDiagram.createPins(); // this line must be next to set lt, rt, lb, rb
+            curDiagram = new Diagram(); // init for waiting next Diagram
+
+            diagAdd = false;
+        }
+
+        private void addCurDiagramToList(string className, string props, string methods)
+        {
+            Diagram d = diagrams[diagrams.Count-1];
+            d.stringsPos = new List<Point>();
+            d.className = strings[0];
+            d.props = strings[1];
+            d.methods = strings[2];
+            d.stringsPos.Add(stringsPos[0]);
+            d.stringsPos.Add(stringsPos[1]);
+            d.stringsPos.Add(stringsPos[2]);
+
+            strings.RemoveAt(0);
+            strings.RemoveAt(0);
+            strings.RemoveAt(0);
+            stringAdd = 0;
+            stageAdd = false; // end of add stage 
+            stageWait = true;
             curDiagram = new Diagram(); // init for waiting next Diagram
         }
 
@@ -314,14 +352,33 @@ namespace ImgBasedDiagramMaker
 
         private void panelCanvas_MouseDown(object sender, MouseEventArgs e)
         {
-            if (stageAdd) // adding stage
+            if (diagAdd) // adding stage
             {
                 addCurDiagramToList(new Point(e.X, e.Y),
                                     new Point(e.X + initImgW, e.Y),
                                     new Point(e.X, e.Y + initImgH),
                                     new Point(e.X + initImgW, e.Y + initImgH));
 
+                diagAdd = false;
+            }
+            else if (stageAdd && stringAdd < 3)
+            {
+                string drawstring = strings[stringAdd];
+
+                Font drawfont = new Font("arial", 16);
+                SolidBrush drawbrush = new SolidBrush(Color.Black);
+                StringFormat drawformat = new StringFormat();
+                tempGraphics.DrawString(drawstring, drawfont, drawbrush, e.X, e.Y, drawformat);
+                Point p = new Point(e.X, e.Y);
+                stringsPos.Add(p);
+                stringAdd++;
+            }
+            else if(stageAdd && stringAdd == 3)
+            {
+                stringAdd = 0;
+                addCurDiagramToList(strings[0], strings[1], strings[2]);
                 stageAdd = false;
+                stringsPos.Clear();
             }
             else if (stageWait || stageUpdate)     // wait or update stage
             {
@@ -510,18 +567,36 @@ namespace ImgBasedDiagramMaker
 
         private void reDraw(MouseEventArgs e)
         {
-            Console.WriteLine("reDraw");
             this.panelCanvas.Refresh();
 
-            if (stageAdd) // adding stage
+            if (diagAdd) // adding stage
             {
                 if (curDiagram.isImgDiagram) // Translate Img Diagram
                 {
                     tempGraphics.DrawImage(bmpImg, e.X, e.Y);
                 }
-                else                         // Redraw Rectangle
+                else                     // Redraw Rectangle
                 {
                     tempGraphics.DrawRectangle(penRect, e.X, e.Y, initImgW, initImgH);
+                }
+            }
+            else if(stageAdd && stringAdd < 3)// draw string 
+            {
+                if(strings.Count == 0)
+                {
+                    클래스정의하기ToolStripMenuItem_Click(null, null); // input
+                }
+                else
+                {
+                    for (int k = 0; k < 3; k++)
+                    {
+                        string drawString = strings[stringAdd];
+
+                        Font drawFont = new System.Drawing.Font("Arial", 16);
+                        SolidBrush drawBrush = new SolidBrush(Color.Black);
+                        StringFormat drawFormat = new System.Drawing.StringFormat();
+                        tempGraphics.DrawString(drawString, drawFont, drawBrush, e.X, e.Y, drawFormat);
+                    }
                 }
             }
 
@@ -531,7 +606,6 @@ namespace ImgBasedDiagramMaker
             // draw classes
             for (int i = 0; i < diagrams.Count; i++)
             {
-                Console.WriteLine(Convert.ToString(i));
                 // draw classes
                 Rectangle tempRect = diagrams[i].getRect();
 
@@ -556,8 +630,29 @@ namespace ImgBasedDiagramMaker
                 }
                 else
                 {
-                    Console.WriteLine("Not IMG");
                     tempGraphics.DrawRectangle(penRect, tempRect);
+                }
+
+                if (diagrams[i].stringsPos != null)
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        string drawString;
+                        if (j == 0)
+                            drawString = diagrams[i].className;
+                        else if (j == 1)
+                            drawString = diagrams[i].props;
+                        else
+                            drawString = diagrams[i].methods;
+
+                        Font drawFont = new System.Drawing.Font("Arial", 16);
+                        SolidBrush drawBrush = new SolidBrush(Color.Black);
+                        StringFormat drawFormat = new System.Drawing.StringFormat();
+
+                        if (diagrams[i].stringsPos.Count == 3)
+                            tempGraphics.DrawString(drawString, drawFont, drawBrush,
+                                                diagrams[i].stringsPos[j].X, diagrams[i].stringsPos[j].Y, drawFormat);
+                    }
                 }
             }
 
@@ -594,5 +689,22 @@ namespace ImgBasedDiagramMaker
 
         } // end of reDraw()
 
+        private void label4_Click(object sender, EventArgs e)
+        {
+            strings.Add(textBox1.Text);
+            strings.Add(textBox2.Text);
+            strings.Add(textBox3.Text);
+
+            flowLayoutPanel1.Visible = false;
+            textBox1.Text = "";
+            textBox2.Text = "";
+            textBox3.Text = "";
+        }
+
+        private void 클래스정의하기ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            flowLayoutPanel1.Visible = true;
+            strings.Clear();
+        }
     } // end of Form class
 } //end of Namespace

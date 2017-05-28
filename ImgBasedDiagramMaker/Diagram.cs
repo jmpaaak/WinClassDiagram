@@ -10,14 +10,17 @@ namespace ImgBasedDiagramMaker
 {
     class Diagram
     {
+        public string className;
+        public string props;
+        public string methods;
+
         // propertis
         public Point leftTop { get; set; }
         public Point rightTop { get; set; }
         public Point leftBottom { get; set; }
         public Point rightBottom { get; set; }
+        public List<Point> stringsPos { get; set; }
         public List<Rectangle> pinRects { get; set; }
-        public TextBox ClassName { get; set; }
-
 
         public bool isImgDiagram { get; set; }
         public bool isUpdateStage { get; set; }
@@ -93,38 +96,6 @@ namespace ImgBasedDiagramMaker
         {
             return pinRects[pinIndex];
         }
-
-        //public void updatePinRect()
-        //{
-        //    for (int pinIndex = 0; pinIndex < 8; pinIndex++)
-        //    {
-        //        Point center = Point.Empty;
-        //        Rectangle res = Rectangle.Empty;
-
-        //        Rectangle dRect = this.getRect();
-
-        //        if (pinIndex == 0)
-        //            center = new Point(dRect.Left, dRect.Top);
-        //        else if (pinIndex == 1)
-        //            center = new Point(dRect.Left, dRect.Top + (dRect.Height / 2));
-        //        else if (pinIndex == 2)
-        //            center = new Point(dRect.Left, dRect.Bottom);
-        //        else if (pinIndex == 3)
-        //            center = new Point(dRect.Left + (dRect.Width / 2), dRect.Top);
-        //        else if (pinIndex == 4)
-        //            center = new Point(dRect.Left + (dRect.Width / 2), dRect.Bottom);
-        //        else if (pinIndex == 5)
-        //            center = new Point(dRect.Right, dRect.Top);
-        //        else if (pinIndex == 6)
-        //            center = new Point(dRect.Right, dRect.Top + (dRect.Height / 2));
-        //        else if (pinIndex == 7)
-        //            center = new Point(dRect.Right, dRect.Bottom);
-
-        //        center.Offset(-2, -2);
-        //        Rectangle r = new Rectangle(center, new Size(5, 5));
-        //        pinRects.Add(r);
-        //    }
-        //}
     }
 
 }
